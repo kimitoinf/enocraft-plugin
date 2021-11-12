@@ -1,0 +1,23 @@
+name: Enocraft-plugin
+author: Kimit
+version: 1.0
+main: com.kimit.enocraft.Main
+api-version: 1.17
+
+commands:
+  setshop:
+    description: Set shop location
+    usage: /<command>
+    permission: enocraft.shop.setshop
+  shop:
+    description: Teleport to shop
+    usage: /<command>
+    permission: enocraft.shop.shop
+  stock:
+    description: Open stock
+    usage: /<command>
+    permission: enocraft.stock
+  dragonegg:
+    description: Regulate stock price when dragon egg.
+    usage: /<command>
+    permission: enocraft.dragonegg
