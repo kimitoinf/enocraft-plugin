@@ -35,14 +35,14 @@ public class Stock
 			};
 	public static final String[] NAME =
 			{
-					"A",
-					"B",
-					"C",
-					"D",
-					"E",
-					"F",
-					"G",
-					"H"
+					"말딸축산",
+					"(주)아오지광업",
+					"화나생명",
+					"(주)비닐하우스",
+					"쌀먹물산",
+					"소말리아수산",
+					"야가다건설",
+					"나사"
 			};
 
 	public static void init()

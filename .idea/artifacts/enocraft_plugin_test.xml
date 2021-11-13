@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="enocraft-plugin-test">
+    <output-path>$PROJECT_DIR$/../enocraft-server/plugins</output-path>
+    <root id="archive" name="enocraft-plugin.jar">
+      <element id="module-output" name="enocraft-plugin" />
+      <element id="dir-copy" path="$PROJECT_DIR$/resources" />
+    </root>
+  </artifact>
+</component>

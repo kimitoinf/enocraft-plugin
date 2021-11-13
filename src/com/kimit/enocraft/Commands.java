@@ -3,6 +3,7 @@ package com.kimit.enocraft;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -29,7 +30,10 @@ public class Commands implements CommandExecutor
 			{
 				case "setshop":
 					Location setshop = player.getLocation();
-					location.set("shop", setshop);
+					location.set("shop.world", setshop.getWorld().getName());
+					location.set("shop.x", setshop.getX());
+					location.set("shop.y", setshop.getY());
+					location.set("shop.z", setshop.getZ());
 					try
 					{
 						location.save(locationfile);
@@ -42,7 +46,7 @@ public class Commands implements CommandExecutor
 					commandSender.sendMessage(Double.toString(setshop.getX()) + ", " + Double.toString(setshop.getY()) + ", " + Double.toString(setshop.getZ()));
 					break;
 				case "shop":
-					Location getshop = location.getLocation("shop");
+					Location getshop = new Location(Bukkit.getWorld(location.getString("shop.world")), location.getDouble("shop.x"), location.getDouble("shop.y"), location.getDouble("shop.z"));
 					if (getshop != null)
 					{
 						player.teleport(getshop);

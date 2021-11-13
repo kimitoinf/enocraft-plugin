@@ -1,5 +1,6 @@
 package com.kimit.enocraft;
 
+import de.tr7zw.nbtapi.NBTItem;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
 import net.minecraft.nbt.NBTTagCompound;
@@ -7,9 +8,11 @@ import net.minecraft.world.item.ItemStack;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -39,24 +42,25 @@ public class Event implements Listener
 	}
 
 	@EventHandler
-	public void pickUpItem(EntityPickupItemEvent e)
+	public void blockDropItem(BlockDropItemEvent e)
 	{
-		if (e.getEntity() instanceof Player)
+		for (Item loop : e.getItems())
 		{
-			ItemStack item = CraftItemStack.asNMSCopy(e.getItem().getItemStack());
-			NBTTagCompound tag = item.hasTag() ? item.getTag() : new NBTTagCompound();
-			if (!tag.getBoolean("Counted"))
+			NBTItem nbt = new NBTItem(loop.getItemStack());
+			if (!nbt.hasKey("Counted"))
 			{
-				tag.setBoolean("Counted", true);
-				item.setTag(tag);
-				e.getItem().setItemStack(CraftItemStack.asBukkitCopy(item));
-				int amount = e.getItem().getItemStack().getAmount();
-				Material material = e.getItem().getItemStack().getType();
-				for (Items.Item loop : Items.Item.values())
-					if (material == Items.MATERIAL[loop.ordinal()]) Items.Count[loop.ordinal()] += amount;
+				nbt.setBoolean("Counted", true);
+				loop.setItemStack(nbt.getItem());
+				int amount = loop.getItemStack().getAmount();
+				Material material = loop.getItemStack().getType();
+				for (Items.Item itemloop : Items.Item.values())
+				{
+					if (material == Items.MATERIAL[itemloop.ordinal()])
+						Items.Count[itemloop.ordinal()] += amount;
+				}
 			}
-			return;
 		}
+		return;
 	}
 
 	@EventHandler
@@ -124,16 +128,6 @@ public class Event implements Listener
 				PlayerInfo.updateScoreboard(player);
 				PlayerInfo.updateStock(player);
 				e.setCancelled(true);
-				break;
-			default:
-				ItemStack item = CraftItemStack.asNMSCopy(e.getCurrentItem());
-				NBTTagCompound tag = item.hasTag() ? item.getTag() : new NBTTagCompound();
-				if (!tag.getBoolean("Counted"))
-				{
-					tag.setBoolean("Counted", true);
-					item.setTag(tag);
-					e.setCurrentItem(CraftItemStack.asBukkitCopy(item));
-				}
 				break;
 		}
 		return;
