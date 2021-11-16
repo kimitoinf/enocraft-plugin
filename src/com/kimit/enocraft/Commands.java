@@ -3,7 +3,7 @@ package com.kimit.enocraft;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -26,6 +26,7 @@ public class Commands implements CommandExecutor
 			File locationfile = new File(Bukkit.getPluginManager().getPlugin("Enocraft-plugin").getDataFolder(), "/location.yml");
 			FileConfiguration location = YamlConfiguration.loadConfiguration(locationfile);
 			Player player = (Player)commandSender;
+			int playerpos = PlayerInfo.getPlayer(player);
 			switch (s)
 			{
 				case "setshop":
@@ -49,13 +50,19 @@ public class Commands implements CommandExecutor
 					Location getshop = new Location(Bukkit.getWorld(location.getString("shop.world")), location.getDouble("shop.x"), location.getDouble("shop.y"), location.getDouble("shop.z"));
 					if (getshop != null)
 					{
-						player.teleport(getshop);
-						commandSender.sendMessage("Teleporting...");
+						commandSender.sendMessage("Teleport in 5 seconds...");
+						new BukkitRunnable()
+						{
+							@Override
+							public void run()
+							{
+								player.teleport(getshop);
+							}
+						}.runTaskLater(Bukkit.getPluginManager().getPlugin("Enocraft-plugin"), 20 * 5);
 					}
 					break;
 				case "stock":
 					commandSender.sendMessage("Open stock.");
-					int playerpos = PlayerInfo.getPlayer(player);
 					BukkitTask task = new BukkitRunnable()
 					{
 						@Override
@@ -83,8 +90,86 @@ public class Commands implements CommandExecutor
 							player.sendMessage("Invalid argument.");
 					}
 					break;
+				case "playerinfo":
+					if (Bukkit.getPlayer(strings[0]) == null)
+						break;
+					int destplayerpos = PlayerInfo.getPlayer(Bukkit.getPlayer(strings[0]));
+					commandSender.sendMessage("Money : " + Long.toString(Main.playerinfos.get(destplayerpos).getMoney()));
+					for (int loop = 0; loop != Main.playerinfos.get(destplayerpos).getStocks().length; loop++)
+						commandSender.sendMessage("Company " + Integer.toString(loop) + " : " + Long.toString(Main.playerinfos.get(destplayerpos).getStocks()[loop]));
+					commandSender.sendMessage("Total invest : " + Long.toString(Main.playerinfos.get(destplayerpos).totalinvest));
+					break;
+				case "send":
+					sendMoney(player, strings[0], strings[1]);
+					break;
+				case "market":
+					if (strings.length < 1)
+					{
+						player.sendMessage("Invalid argument.");
+						break;
+					}
+					switch (strings[0])
+					{
+						case "send":
+							int count = 0;
+							for (var loop : Market.MARKET.getContents())
+							{
+								if (loop != null && loop.getType() != Material.AIR)
+									count++;
+							}
+							if (count >= Market.MARKET.getContents().length)
+							{
+								player.sendMessage("시장에 빈 공간이 없습니다. 나중에 다시 시도하세요.");
+								break;
+							}
+							if (Main.playerinfos.get(playerpos).getMarket() >= 3)
+							{
+								player.sendMessage("시장에는 3회 이상 등록할 수 없습니다.");
+								break;
+							}
+							player.sendMessage("판매할 아이템을 넣으세요.");
+							player.openInventory(Main.playerinfos.get(playerpos).MARKETSEND);
+							break;
+						case "open":
+							player.openInventory(Market.MARKET);
+							break;
+						case "receive":
+							player.openInventory(Main.playerinfos.get(playerpos).MARKETRECEIVE);
+							break;
+						default:
+							player.sendMessage("Invalid argument.");
+							break;
+					}
 			}
 		}
 		return true;
+	}
+
+	private void sendMoney(Player sender, String receiver, String money)
+	{
+		if (Bukkit.getPlayer(receiver) == null)
+		{
+			sender.sendMessage("Invalid player.");
+			return;
+		}
+		if (!StringUtils.isNumeric(money) || Long.parseLong(money) <= 0)
+		{
+			sender.sendMessage("Invalid argument.");
+			return;
+		}
+		long temp = Long.parseLong(money);
+		int senderpos = PlayerInfo.getPlayer(sender);
+		int receiverpos = PlayerInfo.getPlayer(Bukkit.getPlayer(receiver));
+		long sendermoney = Main.playerinfos.get(senderpos).getMoney();
+		if (sendermoney < temp)
+		{
+			sender.sendMessage("잔액이 부족합니다.");
+			return;
+		}
+		Main.playerinfos.get(senderpos).setMoney(sendermoney - temp);
+		Main.playerinfos.get(receiverpos).setMoney(Main.playerinfos.get(receiverpos).getMoney() + temp);
+		sender.sendMessage("플레이어 " + receiver + " 에게 " + money + " 원을 보냈습니다.");
+		PlayerInfo.updateScoreboard(sender);
+		PlayerInfo.updateScoreboard(Bukkit.getPlayer(receiver));
 	}
 }

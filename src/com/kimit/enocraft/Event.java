@@ -3,11 +3,9 @@ package com.kimit.enocraft;
 import de.tr7zw.nbtapi.NBTItem;
 import fr.minuskube.netherboard.Netherboard;
 import fr.minuskube.netherboard.bukkit.BPlayerBoard;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.item.ItemStack;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,10 +15,13 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Event implements Listener
 {
@@ -31,6 +32,8 @@ public class Event implements Listener
 		Main.playerinfos.add(player);
 		BPlayerBoard board = Netherboard.instance().createBoard(e.getPlayer(), "플레이어 정보");
 		board.setAll("닉네임 : " + e.getPlayer().getName(), "돈 : " + Long.toString(player.getMoney()) + " 원");
+		if (!e.getPlayer().hasPlayedBefore())
+			e.getPlayer().getInventory().addItem(new ItemStack(Material.SWEET_BERRIES, 64));
 	}
 
 	@EventHandler
@@ -46,21 +49,36 @@ public class Event implements Listener
 	{
 		for (Item loop : e.getItems())
 		{
+			Material material = loop.getItemStack().getType();
+			if (!Items.isInThere(Items.BLOCKS, material))
+				break;
 			NBTItem nbt = new NBTItem(loop.getItemStack());
 			if (!nbt.hasKey("Counted"))
 			{
 				nbt.setBoolean("Counted", true);
 				loop.setItemStack(nbt.getItem());
-				int amount = loop.getItemStack().getAmount();
-				Material material = loop.getItemStack().getType();
-				for (Items.Item itemloop : Items.Item.values())
-				{
-					if (material == Items.MATERIAL[itemloop.ordinal()])
-						Items.Count[itemloop.ordinal()] += amount;
-				}
+				Items.Count[Items.getItempos(material)] += loop.getItemStack().getAmount();
 			}
 		}
 		return;
+	}
+
+	@EventHandler
+	public void pickUpItem(EntityPickupItemEvent e)
+	{
+		if (e.getEntity() instanceof Player)
+		{
+			Material material = e.getItem().getItemStack().getType();
+			if (!Items.isInThere(Items.PICKUP, material))
+				return;
+			NBTItem nbt = new NBTItem(e.getItem().getItemStack());
+			if (!nbt.hasKey("Counted"))
+			{
+				nbt.setBoolean("Counted", true);
+				e.getItem().setItemStack(nbt.getItem());
+				Items.Count[Items.getItempos(material)] += e.getItem().getItemStack().getAmount();
+			}
+		}
 	}
 
 	@EventHandler
@@ -73,12 +91,12 @@ public class Event implements Listener
 		Player player = (Player)e.getWhoClicked();
 		Material material = e.getCurrentItem().getType();
 		int playerpos = PlayerInfo.getPlayer(player);
+		long result = 0;
 		switch (e.getView().getTitle())
 		{
 			case "Architecture":
 				if (e.getClick().isRightClick() && e.getClickedInventory() != null && e.getClickedInventory().equals(e.getView().getTopInventory()))
 				{
-					long result;
 					if (e.getClick().isShiftClick()) result = PlayerInfo.purchaseItem(player, material, true);
 					else result = PlayerInfo.purchaseItem(player, material, false);
 					if (result == -1) player.sendMessage("돈이 부족합니다.");
@@ -92,7 +110,6 @@ public class Event implements Listener
 			case "Exploring":
 				if (e.getClick().isLeftClick() && e.getClickedInventory() != null && e.getClickedInventory().equals(e.getView().getTopInventory()))
 				{
-					long result;
 					if (e.getClick().isShiftClick()) result = PlayerInfo.sellItem(player, material, true);
 					else result = PlayerInfo.sellItem(player, material, false);
 					if (result == -1) player.sendMessage("아이템이 부족합니다.");
@@ -108,7 +125,6 @@ public class Event implements Listener
 					e.setCancelled(true);
 					break;
 				}
-				long result;
 				if (e.getClick().isLeftClick() && e.getClickedInventory() != null && e.getClickedInventory().equals(e.getView().getTopInventory()))
 				{
 					if (e.getClick().isShiftClick()) result = PlayerInfo.sellStock(player, material, true);
@@ -129,6 +145,57 @@ public class Event implements Listener
 				PlayerInfo.updateStock(player);
 				e.setCancelled(true);
 				break;
+			case "Market":
+				if (e.getClick().isLeftClick() && e.getClickedInventory() != null && e.getClickedInventory().equals(e.getView().getTopInventory()))
+				{
+					result = Market.purchase(player, e.getSlot());
+					if (result == -1) player.sendMessage("돈이 부족합니다.");
+					else
+					{
+						player.sendMessage(Long.toString(result) + " 원에 구매 완료.");
+						player.sendMessage("/market receive 명령어를 통해 구매한 물품을 가져가세요.");
+					}
+				}
+				e.setCancelled(true);
+				break;
+			case "Receive":
+				if (e.getClickedInventory().equals(e.getView().getBottomInventory()))
+					e.setCancelled(true);
+				break;
+			default:
+				switch (e.getClickedInventory().getType())
+				{
+					case FURNACE:
+					case BLAST_FURNACE:
+					case CRAFTING:
+					case WORKBENCH:
+						if (!Items.isInThere(Items.CRAFT, material))
+							return;
+						new BukkitRunnable()
+						{
+							@Override
+							public void run()
+							{
+								ItemStack[] contents = e.getView().getBottomInventory().getContents();
+								for (int loop = 0; loop != contents.length; loop++)
+								{
+									if (contents[loop] == null)
+										continue;
+									if (contents[loop].getType() == material)
+									{
+										NBTItem nbt = new NBTItem(contents[loop]);
+										if (!nbt.hasKey("Counted"))
+										{
+											nbt.setBoolean("Counted", true);
+											contents[loop] = nbt.getItem();
+											Items.Count[Items.getItempos(material)] += contents[loop].getAmount();
+										}
+									}
+								}
+								e.getView().getBottomInventory().setContents(contents);
+							}
+						}.runTaskLater(Bukkit.getPluginManager().getPlugin("Enocraft-plugin"), 5);
+				}
 		}
 		return;
 	}
@@ -175,7 +242,51 @@ public class Event implements Listener
 	@EventHandler
 	public void onCloseInventory(InventoryCloseEvent e)
 	{
-		if (e.getView().getTitle().equals("Stock"))
-			Bukkit.getScheduler().cancelTask(Main.playerinfos.get(PlayerInfo.getPlayer((Player)e.getPlayer())).taskid);
+		switch (e.getView().getTitle())
+		{
+			case "Stock":
+				Bukkit.getScheduler().cancelTask(Main.playerinfos.get(PlayerInfo.getPlayer((Player)e.getPlayer())).taskid);
+				break;
+			case "Send":
+				int count = 0;
+				for (var loop : e.getView().getTopInventory().getContents())
+				{
+					if (loop != null && loop.getType() != Material.AIR)
+						count++;
+				}
+				if (count == 0)
+				{
+					e.getPlayer().sendMessage("판매할 아이템이 없습니다.");
+					break;
+				}
+				Main.playerinfos.get(PlayerInfo.getPlayer((Player)e.getPlayer())).marketsendopen = true;
+				e.getPlayer().sendMessage("판매 가격을 입력해 주세요.");
+				break;
+		}
+	}
+
+	@EventHandler
+	public void onPlayerChat(AsyncPlayerChatEvent e)
+	{
+		int playerpos = PlayerInfo.getPlayer(e.getPlayer());
+		if (Main.playerinfos.get(playerpos).marketsendopen)
+		{
+			if (!StringUtils.isNumeric(e.getMessage()) || Long.parseLong(e.getMessage()) < 0)
+			{
+				e.getPlayer().sendMessage("0 이상의 숫자로 입력해 주세요.");
+				e.setCancelled(true);
+				return;
+			}
+			long price = Long.parseLong(e.getMessage());
+			long fee = (long)Math.ceil((double)price / 10.0);
+			if (fee > Main.playerinfos.get(playerpos).getMoney())
+			{
+				e.getPlayer().sendMessage("수수료를 낼 돈이 없습니다.");
+				e.setCancelled(true);
+				return;
+			}
+			Market.send(e.getPlayer(), price);
+			e.setCancelled(true);
+		}
 	}
 }

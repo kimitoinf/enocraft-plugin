@@ -21,3 +21,15 @@ commands:
     description: Regulate stock price when dragon egg.
     usage: /<command>
     permission: enocraft.dragonegg
+  playerinfo:
+    description: Show player info.
+    usage: /<command>
+    permission: enocraft.playerinfo
+  send:
+    description: Send player money.
+    usage: /<command>
+    permission: enocraft.send
+  market:
+    description: Market command.
+    usage: /<command> <send|open|receive>
+    permission: enocraft.market

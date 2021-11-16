@@ -24,6 +24,8 @@ public class Main extends JavaPlugin
 	public FileConfiguration location = YamlConfiguration.loadConfiguration(locationfile);
 	public File stockfile = new File(getDataFolder(), "/stock.yml");
 	public FileConfiguration stock = YamlConfiguration.loadConfiguration(stockfile);
+	public File marketfile = new File(getDataFolder(), "/market.yml");
+	public FileConfiguration market = YamlConfiguration.loadConfiguration(marketfile);
 
 	@Override
 	public void onEnable()
@@ -80,6 +82,23 @@ public class Main extends JavaPlugin
 			Arrays.fill(Stock.Price, 300000);
 		}
 
+		if (marketfile.exists())
+		{
+			for (int loop = 0; loop != Market.MARKET.getSize(); loop++)
+				Market.MARKET.setItem(Market.MARKET.firstEmpty(), market.getItemStack(Integer.toString(loop)));
+		}
+		else
+		{
+			try
+			{
+				marketfile.createNewFile();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+
 		for (Player player : Bukkit.getServer().getOnlinePlayers())
 		{
 			PlayerInfo playerInfo = new PlayerInfo(player.getUniqueId());
@@ -90,13 +109,17 @@ public class Main extends JavaPlugin
 		Arrays.fill(Items.PrevCount, 0);
 		Merchant.init();
 		Stock.init();
+		Market.init();
 		this.getCommand("setshop").setExecutor(new Commands());
 		this.getCommand("shop").setExecutor(new Commands());
 		this.getCommand("stock").setExecutor(new Commands());
 		this.getCommand("dragonegg").setExecutor(new Commands());
+		this.getCommand("playerinfo").setExecutor(new Commands());
+		this.getCommand("send").setExecutor(new Commands());
+		this.getCommand("market").setExecutor(new Commands());
 		BukkitScheduler scheduler = getServer().getScheduler();
-		scheduler.scheduleSyncRepeatingTask(this, Schedule.UPDATE, 0, 20 * 60 * 40);
-		scheduler.scheduleSyncRepeatingTask(this, Schedule.STOCK, 0, 20 * 60);
+		scheduler.scheduleSyncRepeatingTask(this, Schedule.UPDATE, 20 * 60 * 40, 20 * 60 * 40);
+		scheduler.scheduleSyncRepeatingTask(this, Schedule.STOCK, 20 * 60, 20 * 60);
 		Bukkit.getPluginManager().registerEvents(new Event(), this);
 	}
 
@@ -121,6 +144,17 @@ public class Main extends JavaPlugin
 		try
 		{
 			stock.save(stockfile);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
+		for (int loop = 0; loop != Market.MARKET.getSize(); loop++)
+			market.set(Integer.toString(loop), Market.MARKET.getItem(loop));
+		try
+		{
+			market.save(marketfile);
 		}
 		catch (IOException e)
 		{

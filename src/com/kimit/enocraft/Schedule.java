@@ -3,6 +3,7 @@ package com.kimit.enocraft;
 import org.bukkit.Bukkit;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 
 public class Schedule
 {
@@ -13,11 +14,10 @@ public class Schedule
 		{
 			for (Items.Item loop : Items.Item.values())
 			{
-				if (Items.Count[loop.ordinal()] == 0) Items.Price[loop.ordinal()] = (long)Math.floor(1.05 * (double)Items.Price[loop.ordinal()]);
+				if (Items.PrevCount[loop.ordinal()] > Items.Count[loop.ordinal()])
+					Items.Price[loop.ordinal()] = (long)Math.ceil(1.06 * (double)Items.Price[loop.ordinal()]);
 				else if (Items.PrevCount[loop.ordinal()] < Items.Count[loop.ordinal()])
 					Items.Price[loop.ordinal()] = (long)Math.floor(Items.Price[loop.ordinal()] * (double)240000 / (double)(240000 + (Items.Count[loop.ordinal()] * Items.WEIGHT[loop.ordinal()])));
-				else if (Items.PrevCount[loop.ordinal()] > Items.Count[loop.ordinal()])
-					Items.Price[loop.ordinal()] = (long)Math.floor(Items.Price[loop.ordinal()] * ((double)Items.PrevCount[loop.ordinal()] / (double)Items.Count[loop.ordinal()]));
 			}
 			Items.PrevCount = Items.Count.clone();
 			Arrays.fill(Items.Count, 0);
@@ -31,7 +31,8 @@ public class Schedule
 
 			Arrays.fill(Items.Count, 0);
 			Stock.DeathCount = 0;
-			Bukkit.broadcastMessage(Main.PREFIX + "아이템 카운트가 초기화되었습니다.");
+			Logger logger = Bukkit.getLogger();
+			logger.info(Main.PREFIX + "아이템 카운트가 초기화되었습니다.");
 		}
 	};
 

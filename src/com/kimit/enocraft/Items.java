@@ -18,6 +18,7 @@ public class Items
 
 					8192,
 					384,
+					384,
 					3072,
 					32,
 					32,
@@ -70,7 +71,6 @@ public class Items
 					24508,
 					14068,
 					2092,
-					0,
 					4096,
 					9206,
 					86463,
@@ -79,51 +79,52 @@ public class Items
 
 	public static final Material[] MATERIAL =
 			{
-					Material.BEEF,
+					Material.BEEF, // Drop by killing
 					Material.RABBIT,
 					Material.MUTTON,
 					Material.PORKCHOP,
 					Material.CHICKEN,
 
-					Material.DIAMOND,
+					Material.DIAMOND, // Drop by blocks
+					Material.COPPER_INGOT,
 					Material.IRON_INGOT,
 					Material.GOLD_INGOT,
 					Material.REDSTONE,
 					Material.COAL,
 					Material.LAPIS_LAZULI,
-					Material.NETHERITE_INGOT,
+					Material.NETHERITE_INGOT, // On craft
 
-					Material.WHEAT,
+					Material.WHEAT, // Drop by blocks
 					Material.POTATO,
 					Material.CARROT,
 					Material.BEETROOT,
-					Material.SUGAR_CANE,
+					Material.SUGAR_CANE, // Pick up
 					Material.PUMPKIN,
 					Material.MELON_SLICE,
 					Material.NETHER_WART,
 					Material.HONEY_BLOCK,
-					Material.BEE_NEST,
-					Material.SWEET_BERRIES,
-					Material.APPLE,
-					Material.COCOA_BEANS,
+					Material.BEE_NEST, // On craft, drop by blocks
+					Material.SWEET_BERRIES, // Pick up
+					Material.APPLE, // Pick up
+					Material.COCOA_BEANS, // Drop by blocks
 					
-					Material.EMERALD,
+					Material.EMERALD, // Drop by blocks
 
-					Material.COD,
+					Material.COD, // Drop by fishing
 					Material.SALMON,
 					Material.TROPICAL_FISH,
 					Material.PUFFERFISH,
 
-					Material.QUARTZ_BLOCK,
+					Material.QUARTZ_BLOCK, // On craft
 					// Concrete
-					Material.CLAY_BALL,
-					Material.GLASS,
+					Material.CLAY_BALL, // Drop by blocks
+					Material.GLASS, // On craft
 					Material.BRICKS,
-					Material.SCAFFOLDING,
+					Material.SCAFFOLDING, // On craft
 					// Log
-					Material.STONE_BRICKS,
+					Material.STONE_BRICKS, // Drop by blocks
 
-					Material.SPIDER_EYE,
+					Material.SPIDER_EYE, // Drop by killing
 					Material.ROTTEN_FLESH,
 					Material.BONE,
 					Material.GUNPOWDER,
@@ -133,16 +134,101 @@ public class Items
 					Material.NETHER_STAR,
 					Material.BLAZE_ROD,
 					Material.SHULKER_SHELL,
-					Material.NAUTILUS_SHELL,
-					Material.WITHER_SKELETON_SKULL,
-					Material.DRAGON_HEAD,
-					Material.END_CRYSTAL,
-					Material.TOTEM_OF_UNDYING,
+					Material.NAUTILUS_SHELL, // Pick up, treasure
+					Material.WITHER_SKELETON_SKULL, // Drop by killing
+					Material.DRAGON_HEAD, // Drop by blocks
+					Material.END_CRYSTAL, // On craft
+					Material.TOTEM_OF_UNDYING, // Pick up, treasure
 					// Banner of Villager
-					Material.GHAST_TEAR,
-					Material.PHANTOM_MEMBRANE,
-					Material.TRIDENT,
+					Material.GHAST_TEAR, // Drop by killing
+					Material.PHANTOM_MEMBRANE, // Drop by killing
+					Material.TRIDENT, // Drop by killing
 					Material.AIR
+			};
+
+	public static final Material[] BLOCKS =
+			{
+					Material.DIAMOND, // Drop by blocks
+					Material.RAW_COPPER,
+					Material.RAW_IRON,
+					Material.RAW_GOLD,
+					Material.REDSTONE,
+					Material.COAL,
+					Material.LAPIS_LAZULI,
+
+					Material.WHEAT, // Drop by blocks
+					Material.POTATO,
+					Material.CARROT,
+					Material.BEETROOT,
+					Material.PUMPKIN,
+					Material.MELON_SLICE,
+					Material.NETHER_WART,
+					Material.HONEY_BLOCK,
+					Material.BEE_NEST, // On craft, drop by blocks
+					Material.COCOA_BEANS, // Drop by blocks
+
+					Material.EMERALD, // Drop by blocks
+
+					Material.CLAY_BALL, // Drop by blocks
+					Material.STONE_BRICKS, // Drop by blocks
+
+					Material.DRAGON_HEAD // Drop by blocks
+			};
+
+	public static final Material[] PICKUP =
+			{
+					Material.BEEF, // Drop by killing
+					Material.RABBIT,
+					Material.MUTTON,
+					Material.PORKCHOP,
+					Material.CHICKEN,
+
+					Material.NETHERITE_INGOT, // On craft
+
+					Material.SUGAR_CANE, // Pick up
+					Material.SWEET_BERRIES, // Pick up
+					Material.APPLE, // Pick up
+					Material.BEE_NEST, // On craft, drop by blocks
+
+					Material.COD, // Drop by fishing
+					Material.SALMON,
+					Material.TROPICAL_FISH,
+					Material.PUFFERFISH,
+
+					Material.QUARTZ_BLOCK, // On craft
+					Material.GLASS, // On craft
+					Material.BRICKS,
+					Material.SCAFFOLDING, // On craft
+
+					Material.SPIDER_EYE, // Drop by killing
+					Material.ROTTEN_FLESH,
+					Material.BONE,
+					Material.GUNPOWDER,
+					Material.ENDER_PEARL,
+					Material.MAGMA_CREAM,
+					Material.SLIME_BALL,
+					Material.NETHER_STAR,
+					Material.BLAZE_ROD,
+					Material.SHULKER_SHELL,
+					Material.NAUTILUS_SHELL, // Pick up, treasure
+					Material.WITHER_SKELETON_SKULL, // Drop by killing
+					Material.TOTEM_OF_UNDYING, // Pick up, treasure
+					Material.GHAST_TEAR, // Drop by killing
+					Material.PHANTOM_MEMBRANE, // Drop by killing
+					Material.TRIDENT // Drop by killing
+			};
+
+	public static final Material[] CRAFT =
+			{
+					Material.NETHERITE_INGOT, // On craft
+
+					Material.BEE_NEST, // On craft, drop by blocks
+
+					Material.QUARTZ_BLOCK, // On craft
+					Material.GLASS, // On craft
+					Material.BRICKS,
+					Material.STONE_BRICKS,
+					Material.SCAFFOLDING // On craft
 			};
 
 	public static enum Item
@@ -154,6 +240,7 @@ public class Items
 		CHICKEN,
 
 		DIAMOND,
+		COPPER_INGOT,
 		IRON_INGOT,
 		GOLD_INGOT,
 		REDSTONE,
@@ -211,5 +298,38 @@ public class Items
 		PHANTOM_MEMBRANE,
 		TRIDENT,
 		END
+	}
+
+	public static int getItempos(Material material)
+	{
+		Material temp = material;
+		switch (material)
+		{
+			case RAW_GOLD:
+				temp = Material.GOLD_INGOT;
+				break;
+			case RAW_IRON:
+				temp = Material.IRON_INGOT;
+				break;
+			case RAW_COPPER:
+				temp = Material.COPPER_INGOT;
+				break;
+		}
+		for (Items.Item loop : Items.Item.values())
+		{
+			if (temp == Items.MATERIAL[loop.ordinal()])
+				return loop.ordinal();
+		}
+		return -1;
+	}
+
+	public static boolean isInThere(Material[] items, Material material)
+	{
+		for (var loop : items)
+		{
+			if (material == loop)
+				return true;
+		}
+		return false;
 	}
 }

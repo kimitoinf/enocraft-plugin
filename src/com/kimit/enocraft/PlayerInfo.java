@@ -24,9 +24,13 @@ public class PlayerInfo
 	private FileConfiguration player;
 	private long money = 0;
 	private long[] stocks = new long[8];
+	private int market = 0;
 	public long totalstocks = 0;
 	public long totalinvest = 0;
 	public Inventory STOCK = Bukkit.createInventory(null, 27, "Stock");
+	public Inventory MARKETSEND = Bukkit.createInventory(null, 27, "Send");
+	public Inventory MARKETRECEIVE = Bukkit.createInventory(null, 27, "Receive");
+	public boolean marketsendopen = false;
 	public int taskid;
 
 	PlayerInfo(UUID uuid)
@@ -56,6 +60,10 @@ public class PlayerInfo
 				stocks[loop] = player.getLong("Company" + Integer.toString(loop));
 			totalstocks = player.getLong("Stocks");
 			totalinvest = player.getLong("Invest");
+			market = player.getInt("Market");
+			ItemStack[] contents = new ItemStack[MARKETRECEIVE.getContents().length];
+			for (int loop = 0; loop != MARKETRECEIVE.getContents().length; loop++)
+				contents[loop] = player.getItemStack("Receives." + Integer.toString(loop));
 		}
 	}
 
@@ -84,6 +92,21 @@ public class PlayerInfo
 		this.stocks = stocks;
 	}
 
+	public int getMarket()
+	{
+		return market;
+	}
+
+	public void upMarket()
+	{
+		market++;
+	}
+
+	public void downMarket()
+	{
+		market--;
+	}
+
 	public void setInfo()
 	{
 		player.set("Money", money);
@@ -91,6 +114,9 @@ public class PlayerInfo
 			player.set("Company" + Integer.toString(loop), stocks[loop]);
 		player.set("Stocks", totalstocks);
 		player.set("Invest", totalinvest);
+		player.set("Market", market);
+		for (int loop = 0; loop != MARKETRECEIVE.getContents().length; loop++)
+			player.set("Receives." + Integer.toString(loop), MARKETRECEIVE.getContents()[loop]);
 		try
 		{
 			player.save(playerfile);
@@ -172,14 +198,14 @@ public class PlayerInfo
 
 		if (shift)
 		{
-			total = Items.Price[pos] * 64;
+			total = 2 * Items.Price[pos] * 64;
 			if (money < total) return -1;
 			Main.playerinfos.get(playerpos).setMoney(money - total);
 			player.getInventory().addItem(new ItemStack(product, 64));
 		}
 		else
 		{
-			total = Items.Price[pos];
+			total = 2 * Items.Price[pos];
 			if (money < total) return -1;
 			Main.playerinfos.get(playerpos).setMoney(money - total);
 			player.getInventory().addItem(new ItemStack(product, 1));
@@ -189,9 +215,7 @@ public class PlayerInfo
 
 	public static void updateScoreboard(Player player)
 	{
-		int playerpos = getPlayer(player);
-		player.sendMessage(Integer.toString(Main.playerinfos.size()));
-		Netherboard.instance().getBoard(player).setAll("닉네임 : " + player.getName(), "돈 : " + Long.toString(Main.playerinfos.get(playerpos).getMoney()) + " 원");
+		Netherboard.instance().getBoard(player).setAll("닉네임 : " + player.getName(), "돈 : " + Long.toString(Main.playerinfos.get(getPlayer(player)).getMoney()) + " 원");
 	}
 
 	public static long sellStock(Player player, Material company, boolean shift)
