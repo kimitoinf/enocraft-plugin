@@ -12,12 +12,24 @@ public class Schedule
 		@Override
 		public void run()
 		{
+			final long[] PrevPrice = Items.Price.clone();
+			final int players = Bukkit.getOnlinePlayers().size();
 			for (Items.Item loop : Items.Item.values())
 			{
 				if (Items.PrevCount[loop.ordinal()] > Items.Count[loop.ordinal()])
-					Items.Price[loop.ordinal()] = (long)Math.ceil(1.06 * (double)Items.Price[loop.ordinal()]);
+					Items.Price[loop.ordinal()] = (long)Math.ceil((double)Items.WEIGHT[loop.ordinal()] * ((double)Main.MERCHANTINCREASE * Main.MERCHANTETC * Math.log10(players + 1) + 1.2));
 				else if (Items.PrevCount[loop.ordinal()] < Items.Count[loop.ordinal()])
-					Items.Price[loop.ordinal()] = (long)Math.floor(Items.Price[loop.ordinal()] * (double)240000 / (double)(240000 + (Items.Count[loop.ordinal()] * Items.WEIGHT[loop.ordinal()])));
+					Items.Price[loop.ordinal()] = (long)Math.ceil((double)Items.WEIGHT[loop.ordinal()] * (double)Main.MERCHANTDECREASE / (Main.MERCHANTDECREASE + (double)(Items.Count[loop.ordinal()] * Items.WEIGHT[loop.ordinal()])));
+			}
+			for (int loop = Items.Item.SPIDER_EYE.ordinal(); loop != Items.Item.END.ordinal(); loop++)
+			{
+				if (Items.PrevCount[loop] > Items.Count[loop])
+					Items.Price[loop] = (long)Math.ceil((double)Items.WEIGHT[loop] * ((double)Main.MERCHANTINCREASE * Main.MERCHANTEXPLORING * Math.log10(players + 1) + 1.2));
+			}
+			for (int loop = Items.Item.DIAMOND.ordinal(); loop != Items.Item.WHEAT.ordinal(); loop++)
+			{
+				if (Items.PrevCount[loop] > Items.Count[loop])
+					Items.Price[loop] = (long)Math.ceil((double)Items.WEIGHT[loop] * ((double)Main.MERCHANTINCREASE * Main.MERCHANTMINING * Math.log10(players + 1) + 1.2));
 			}
 			Items.PrevCount = Items.Count.clone();
 			Arrays.fill(Items.Count, 0);

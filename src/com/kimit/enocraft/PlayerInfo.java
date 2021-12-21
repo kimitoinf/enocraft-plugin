@@ -64,6 +64,7 @@ public class PlayerInfo
 			ItemStack[] contents = new ItemStack[MARKETRECEIVE.getContents().length];
 			for (int loop = 0; loop != MARKETRECEIVE.getContents().length; loop++)
 				contents[loop] = player.getItemStack("Receives." + Integer.toString(loop));
+			MARKETRECEIVE.setContents(contents);
 		}
 	}
 

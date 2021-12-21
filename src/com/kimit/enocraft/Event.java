@@ -15,6 +15,8 @@ import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -67,6 +69,24 @@ public class Event implements Listener
 	public void pickUpItem(EntityPickupItemEvent e)
 	{
 		if (e.getEntity() instanceof Player)
+		{
+			Material material = e.getItem().getItemStack().getType();
+			if (!Items.isInThere(Items.PICKUP, material))
+				return;
+			NBTItem nbt = new NBTItem(e.getItem().getItemStack());
+			if (!nbt.hasKey("Counted"))
+			{
+				nbt.setBoolean("Counted", true);
+				e.getItem().setItemStack(nbt.getItem());
+				Items.Count[Items.getItempos(material)] += e.getItem().getItemStack().getAmount();
+			}
+		}
+	}
+
+	@EventHandler
+	public void inventoryPickUpItem(InventoryPickupItemEvent e)
+	{
+		if (e.getInventory().getType() == InventoryType.HOPPER)
 		{
 			Material material = e.getItem().getItemStack().getType();
 			if (!Items.isInThere(Items.PICKUP, material))
@@ -236,7 +256,8 @@ public class Event implements Listener
 	@EventHandler
 	public void onDeath(PlayerDeathEvent e)
 	{
-		Stock.DeathCount++;
+		if (e.getEntity() instanceof Player && e.getEntity().getKiller() instanceof Player)
+			Stock.DeathCount++;
 	}
 
 	@EventHandler

@@ -140,6 +140,9 @@ public class Commands implements CommandExecutor
 							player.sendMessage("Invalid argument.");
 							break;
 					}
+				case "constant":
+					constant(commandSender, strings);
+					break;
 			}
 		}
 		return true;
@@ -171,5 +174,79 @@ public class Commands implements CommandExecutor
 		sender.sendMessage("플레이어 " + receiver + " 에게 " + money + " 원을 보냈습니다.");
 		PlayerInfo.updateScoreboard(sender);
 		PlayerInfo.updateScoreboard(Bukkit.getPlayer(receiver));
+	}
+
+	private void constant(CommandSender sender, String[] strings)
+	{
+		if (strings.length < 1)
+		{
+			sender.sendMessage("Invalid argument.");
+			return;
+		}
+		if (strings[0].equals("get"))
+		{
+			if (strings.length < 2)
+			{
+				sender.sendMessage("Invalid argument.");
+				return;
+			}
+			switch (strings[1])
+			{
+				case "stock-increase":
+					sender.sendMessage("Stock increase constant : " + Long.toString(Main.STOCKINCREASE));
+					break;
+				case "merchant-increase":
+					sender.sendMessage("Merchant increase constant : " + Long.toString(Main.MERCHANTINCREASE));
+					break;
+				case "merchant-decrease":
+					sender.sendMessage("Merchant decrease constant : " + Long.toString(Main.MERCHANTDECREASE));
+					break;
+				case "merchant-mining":
+					sender.sendMessage("Merchant mining constant : " + Double.toString(Main.MERCHANTMINING));
+					break;
+				case "merchant-exploring":
+					sender.sendMessage("Merchant exploring constant : " + Double.toString(Main.MERCHANTEXPLORING));
+					break;
+				case "merchant-etc":
+					sender.sendMessage("Merchant etc constant : " + Double.toString(Main.MERCHANTETC));
+					break;
+				default:
+					sender.sendMessage("Invalid argument.");
+					break;
+			}
+		}
+		else if (strings[0].equals("set"))
+		{
+			if (strings.length < 3 || !StringUtils.isNumeric(strings[2]))
+			{
+				sender.sendMessage("Invalid argument.");
+				return;
+			}
+			switch (strings[1])
+			{
+				case "stock-increase":
+					Main.STOCKINCREASE = Long.parseLong(strings[2]);
+					break;
+				case "merchant-increase":
+					Main.MERCHANTINCREASE = Long.parseLong(strings[2]);
+					break;
+				case "merchant-decrease":
+					Main.MERCHANTDECREASE = Long.parseLong(strings[2]);
+					break;
+				case "merchant-mining":
+					Main.MERCHANTMINING = Double.parseDouble(strings[2]);
+					break;
+				case "merchant-exploring":
+					Main.MERCHANTEXPLORING = Double.parseDouble(strings[2]);
+					break;
+				case "merchant-etc":
+					Main.MERCHANTETC = Double.parseDouble(strings[2]);
+					break;
+				default:
+					sender.sendMessage("Invalid argument.");
+					return;
+			}
+			sender.sendMessage("Constant setting completed.");
+		}
 	}
 }

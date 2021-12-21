@@ -1,9 +1,11 @@
 package com.kimit.enocraft;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 
@@ -26,6 +28,15 @@ public class Main extends JavaPlugin
 	public FileConfiguration stock = YamlConfiguration.loadConfiguration(stockfile);
 	public File marketfile = new File(getDataFolder(), "/market.yml");
 	public FileConfiguration market = YamlConfiguration.loadConfiguration(marketfile);
+	public File constantfile = new File(getDataFolder(), "/constant.yml");
+	public FileConfiguration constant = YamlConfiguration.loadConfiguration(constantfile);
+
+	public static long STOCKINCREASE;
+	public static long MERCHANTINCREASE;
+	public static long MERCHANTDECREASE;
+	public static double MERCHANTMINING;
+	public static double MERCHANTEXPLORING;
+	public static double MERCHANTETC;
 
 	@Override
 	public void onEnable()
@@ -85,7 +96,14 @@ public class Main extends JavaPlugin
 		if (marketfile.exists())
 		{
 			for (int loop = 0; loop != Market.MARKET.getSize(); loop++)
-				Market.MARKET.setItem(Market.MARKET.firstEmpty(), market.getItemStack(Integer.toString(loop)));
+			{
+				int marketpos = Market.MARKET.firstEmpty();
+				Market.MARKET.setItem(marketpos, market.getItemStack(Integer.toString(loop) + ".head"));
+				ItemStack[] stacks = new ItemStack[market.getInt(Integer.toString(loop) + ".count")];
+				for (int stackloop = 0; stackloop != market.getInt(Integer.toString(loop) + ".count"); stackloop++)
+					stacks[stackloop] = market.getItemStack(Integer.toString(loop) + "." + Integer.toString(stackloop));
+				Market.ITEMS.add(marketpos, stacks);
+			}
 		}
 		else
 		{
@@ -97,6 +115,33 @@ public class Main extends JavaPlugin
 			{
 				e.printStackTrace();
 			}
+		}
+
+		if (constantfile.exists())
+		{
+			STOCKINCREASE = constant.getLong("stock-increase");
+			MERCHANTINCREASE = constant.getLong("merchant-increase");
+			MERCHANTDECREASE = constant.getLong("merchant-decrease");
+			MERCHANTMINING = constant.getDouble("merchant-mining");
+			MERCHANTEXPLORING = constant.getDouble("merchant-exploring");
+			MERCHANTETC = constant.getDouble("merchant-etc");
+		}
+		else
+		{
+			try
+			{
+				constantfile.createNewFile();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			STOCKINCREASE = 324500;
+			MERCHANTINCREASE = 1;
+			MERCHANTDECREASE = 350000;
+			MERCHANTMINING = 0.182;
+			MERCHANTEXPLORING = 0.042;
+			MERCHANTETC = 0.092;
 		}
 
 		for (Player player : Bukkit.getServer().getOnlinePlayers())
@@ -117,6 +162,7 @@ public class Main extends JavaPlugin
 		this.getCommand("playerinfo").setExecutor(new Commands());
 		this.getCommand("send").setExecutor(new Commands());
 		this.getCommand("market").setExecutor(new Commands());
+		this.getCommand("constant").setExecutor(new Commands());
 		BukkitScheduler scheduler = getServer().getScheduler();
 		scheduler.scheduleSyncRepeatingTask(this, Schedule.UPDATE, 20 * 60 * 40, 20 * 60 * 40);
 		scheduler.scheduleSyncRepeatingTask(this, Schedule.STOCK, 20 * 60, 20 * 60);
@@ -150,11 +196,37 @@ public class Main extends JavaPlugin
 			e.printStackTrace();
 		}
 
-		for (int loop = 0; loop != Market.MARKET.getSize(); loop++)
-			market.set(Integer.toString(loop), Market.MARKET.getItem(loop));
+		int count = 0;
+		for (var loop : Market.MARKET.getContents())
+		{
+			if (loop != null && loop.getType() != Material.AIR)
+				count++;
+		}
+		for (int loop = 0; loop != count; loop++)
+		{
+			market.set(Integer.toString(loop) + ".head", Market.MARKET.getItem(loop));
+			market.set(Integer.toString(loop) + ".count", Market.ITEMS.get(loop).length);
+			for (int stackloop = 0; stackloop != Market.ITEMS.get(loop).length; stackloop++)
+				market.set(Integer.toString(loop) + "." + Integer.toString(stackloop), Market.ITEMS.get(loop)[stackloop]);
+		}
 		try
 		{
 			market.save(marketfile);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
+		constant.set("stock-increase", STOCKINCREASE);
+		constant.set("merchant-increase", MERCHANTINCREASE);
+		constant.set("merchant-decrease", MERCHANTDECREASE);
+		constant.set("merchant-mining", MERCHANTMINING);
+		constant.set("merchant-exploring", MERCHANTEXPLORING);
+		constant.set("merchant-etc", MERCHANTETC);
+		try
+		{
+			constant.save(constantfile);
 		}
 		catch (IOException e)
 		{
